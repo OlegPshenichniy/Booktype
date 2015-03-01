@@ -153,6 +153,25 @@ def get_book(request, bookid, versionid):
     return book, book_version, book_security
 
 
+def get_video_users(bookid, online_usernames):
+    """
+    Get online users which available for video call.
+
+    @type online_usernames: C{list}
+    @param online_usernames: Online users usernames
+    @type bookid: C{string}
+    @param bookid: Unique Book id
+    @rtype: C{list}
+    @return: Return online users which available for video call
+    """
+    usernames_qs = User.objects.filter(videosettings__book=bookid,
+                                       videosettings__enabled=True,
+                                       username__in=online_usernames)
+
+    usernames = usernames_qs.values('username', 'first_name', 'last_name', 'email')
+    return usernames
+
+
 def remote_init_editor(request, message, bookid, version):
     """
     Called when Booki editor is being initialized.
@@ -169,6 +188,7 @@ def remote_init_editor(request, message, bookid, version):
      - statuses - list of tuples (status_id, status_name)
      - attachments - result of getAttachments function
      - onlineUsers - list of online users
+     - videoUsers - list of online users which available for video call
 
     @type request: C{django.http.HttpRequest}
     @param request: Client Request object
@@ -303,6 +323,9 @@ def remote_init_editor(request, message, bookid, version):
     except:
         pass
 
+    # video users
+    video_users = get_video_users(bookid, online_usernames=[i['username'] for i in onlineUsers])
+
     return {"licenses": licenses,
             "chapters": chapters,
             "metadata": metadata,
@@ -312,7 +335,8 @@ def remote_init_editor(request, message, bookid, version):
             "locks": locks,
             "statuses": statuses,
             "attachments": attachments,
-            "onlineUsers": list(onlineUsers)}
+            "onlineUsers": list(onlineUsers),
+            "videoUsers": list(video_users)}
 
 
 def remote_attachments_list(request, message, bookid, version):
