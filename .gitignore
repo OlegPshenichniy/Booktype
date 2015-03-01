@@ -9,4 +9,7 @@
 \#*
 *.sublime-*
 .venv
+.env
 .jshintrc
+*.log
+local_settings.py
