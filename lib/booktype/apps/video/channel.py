@@ -4,22 +4,9 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 
 from booki.utils import security
 from booki.editor import models
-from booktype.apps.edit.channel import get_video_users
 
 from .models import VideoSettings
-
-
-def get_online_video_users(bookid):
-    try:
-        # need more time to research this feature
-        online_users = sputnik.smembers("sputnik:channel:%s:users" % '/booktype/book/1/1.0/')
-    except:
-        online_users = []
-
-    # video users
-    video_users = get_video_users(bookid, online_usernames=online_users)
-
-    return list(video_users)
+from .utils import get_online_video_users
 
 
 def remote_video_settings(request, message, bookid):

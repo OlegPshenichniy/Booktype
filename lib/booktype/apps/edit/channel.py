@@ -31,7 +31,7 @@ from booki.utils.log import logBookHistory, logChapterHistory
 
 from booktype.utils.misc import booktype_slugify
 from booktype.apps.core.models import Role, BookRole
-
+from booktype.apps.video.utils import filter_video_users
 
 # this couple of functions should go to models.BookVersion
 def get_toc_for_book(version):
@@ -151,25 +151,6 @@ def get_book(request, bookid, versionid):
         raise ObjectDoesNotExist
 
     return book, book_version, book_security
-
-
-def get_video_users(bookid, online_usernames):
-    """
-    Get online users which available for video call.
-
-    @type online_usernames: C{list}
-    @param online_usernames: Online users usernames
-    @type bookid: C{string}
-    @param bookid: Unique Book id
-    @rtype: C{list}
-    @return: Return online users which available for video call
-    """
-    usernames_qs = User.objects.filter(videosettings__book=bookid,
-                                       videosettings__enabled=True,
-                                       username__in=online_usernames)
-
-    usernames = usernames_qs.values('username', 'first_name', 'last_name', 'email')
-    return usernames
 
 
 def remote_init_editor(request, message, bookid, version):
@@ -324,7 +305,7 @@ def remote_init_editor(request, message, bookid, version):
         pass
 
     # video users
-    video_users = get_video_users(bookid, online_usernames=[i['username'] for i in onlineUsers])
+    video_users = filter_video_users(bookid, usernames=[i['username'] for i in onlineUsers])
 
     return {"licenses": licenses,
             "chapters": chapters,
