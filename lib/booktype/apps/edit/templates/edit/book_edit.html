@@ -102,6 +102,62 @@
        </div>
     </section>
 
+    <section class="tab-content" source_id="video-tab">
+       <h3>{% trans "Video call" %}</h3>
+        <h4>{% trans "Settings" %}</h4>
+        <p>
+            <span class="icon-camera" aria-hidden="true"></span>
+            {% trans "Test your camera" %} <a href="" onclick="window.open('/video/camera-test/', 'newwindow', 'width=1024, height=1080'); return false;">{% trans "here" %}</a>
+        </p>
+        <div class="checkbox">
+            <label>
+              <input type="checkbox" id="video-enabled">
+              {% trans "Video enabled" %}
+            </label>
+        </div>
+        <hr>
+
+        <h4>{% trans "Invitations" %}</h4>
+        <script type="text/html" id="templateVideoInvitation">
+            <li id="username-invitation-<%= inviter %>">
+                <div class="list-info">
+                    <!-- TODO remove hardcode from onclick -->
+                    <a onclick="jQuery('#username-invitation-<%= inviter %>').remove();window.open('<%= node_link %>', 'newwindow', 'width=1240, height=880'); return false;" class="btn btn-success pull-right">
+                        {% trans "Accept" %}
+                    </a>
+                    <h4><a target="_blank" href="/accounts/<%= inviter %>/"><%= inviter %></a></h4>
+                    <p>{% trans "invites you for video call" %}</p>
+                </div>
+            </li>
+        </script>
+
+        <div id="video-invitations">
+            <p>{% trans "You have not active invitations" %}</p>
+            <ul class="list border-top circle video-invitations">
+            </ul>
+        </div>
+        <hr>
+        <h4>{% trans "Available users" %}</h4>
+        <script type="text/html" id="templateVideoUser">
+            <li id="username-video-<%= username %>">
+                <figure><img src="<%= gravatar %>"></figure>
+                <div class="list-info">
+                    <h4><a target="_blank" href="/accounts/<%= username %>/"><%= username %></a></h4>
+                    <p><%= fullname %></p>
+                    <!-- TODO remove hardcode from onclick -->
+                    <a onclick="window.open('/video/<%= current_username %>/<%= username %>-book-<%= book %>/', 'newwindow', 'width=1240, height=880'); return false;" class="btn btn-default">
+                        {% trans "Call invitation" %}
+                        <span class="icon-facetime-video" aria-hidden="true"></span>
+                    </a>
+                </div>
+            </li>
+        </script>
+        <div>
+            <ul class="list border-top user-avatar circle video-available-users">
+            </ul>
+        </div>
+    </section>
+
     <section class="tab-content notes-tab" source_id="notes-tab">
       <h3>{% trans "Notes" %}</h3>
       <div class="notes-tab-content">

@@ -9,4 +9,6 @@
 \#*
 *.sublime-*
 .venv
+.env
 .jshintrc
+.log
