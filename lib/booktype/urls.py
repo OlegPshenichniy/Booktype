@@ -24,7 +24,8 @@ SPUTNIK_DISPATCHER = (
     (r'^/booki/$', 'booki.channels.main'),
     (r'^/booki/profile/(?P<profileid>.+)/$', 'booki.channels.profile'),
     (r'^/chat/(?P<bookid>\d+)/$', 'booki.channels.chat'),
-    (r'^/booktype/book/(?P<bookid>\d+)/(?P<version>[\w\d\.\-.]+)/$', 'booktype.apps.edit.channel')
+    (r'^/booktype/book/(?P<bookid>\d+)/(?P<version>[\w\d\.\-.]+)/$', 'booktype.apps.edit.channel'),
+    (r'^/video/(?P<bookid>\d+)/$', 'booktype.apps.video.channel'),
 )
 
 urlpatterns = patterns(
@@ -60,7 +61,10 @@ urlpatterns = patterns(
 
     # importer application
     # TODO: Add namespace
-    url(r'^importer/', include('booktype.apps.importer.urls'))
+    url(r'^importer/', include('booktype.apps.importer.urls')),
+
+    # video application
+    url(r'^video/', include('booktype.apps.video.urls'))
 )
 
 urlpatterns += patterns('',

@@ -32,6 +32,8 @@ from booki.utils.log import logBookHistory, logChapterHistory
 from booktype.utils import security
 from booktype.utils.misc import booktype_slugify
 from booktype.apps.core.models import Role, BookRole
+from booktype.apps.video.utils import filter_video_users
+
 
 
 # this couple of functions should go to models.BookVersion
@@ -170,6 +172,7 @@ def remote_init_editor(request, message, bookid, version):
      - statuses - list of tuples (status_id, status_name)
      - attachments - result of getAttachments function
      - onlineUsers - list of online users
+     - videoUsers - list of online users which available for video call
 
     @type request: C{django.http.HttpRequest}
     @param request: Client Request object
@@ -315,6 +318,9 @@ def remote_init_editor(request, message, bookid, version):
         theme = UserTheme(book=book, owner=request.user)
         theme.save()
 
+    # video users
+    video_users = filter_video_users(bookid, usernames=[i['username'] for i in onlineUsers])
+
     return {"licenses": licenses,
             "chapters": chapters,
             "metadata": metadata,
@@ -327,7 +333,8 @@ def remote_init_editor(request, message, bookid, version):
             "theme": theme.active,
             # Check for errors in the future
             "theme_custom": json.loads(theme.custom),
-            "onlineUsers": list(onlineUsers)}
+            "onlineUsers": list(onlineUsers),
+            "videoUsers": list(video_users)}
 
 
 def remote_attachments_list(request, message, bookid, version):

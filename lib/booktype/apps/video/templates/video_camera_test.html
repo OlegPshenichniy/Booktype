@@ -1,0 +1,55 @@
+{% extends "core/base.html" %}
+{% load i18n staticfiles booktype_tags compress %}
+
+
+{% block extra_header %}
+    {% compress css %}
+    <style type="text/css">
+        #local {
+            width: 100%;
+            height: 400px;
+            background: #ebebeb;
+        }
+    </style>
+    {% endcompress %}
+    {% compress js %}
+        <script type="text/javascript" src="{% static "core/js/jquery-1.9.1.js" %}"></script>
+        <script src="{% static "video/js/webrtc-adapter.js" %}"></script>
+        <script src="{% static "video/js/test.js" %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block navigation %}
+    <div class="navigation-bar">
+      {% booktype_site_name %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row two-col">
+            <div class="col-xs-12">
+                <div class="box white">
+                    <h2>{% trans "How to test?" %}</h2>
+
+                    <p>Connect your camera to your computer. Check that your browser is support webRTC technology.
+                        Browser will ask you to share video device with current tab. Share it. Remember that if camera
+                        is using by another browser or tab, current tab will not get access to this camera.
+                        In case you got fail message - check your camera connection and restart your browser.</p>
+                    <p><b>Supported browsers: Chrome/Chromium, Opera and Firefox.</b></p>
+                </div>
+                <div class="box white">
+                    <h2>{% trans "Your camera stream" %}</h2>
+                    <video id="local" autoplay muted></video>
+                </div>
+                <div class="text-center">
+                    <span id="traceback" class="label"></span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+ {% block footer %}
+ {% endblock %}
