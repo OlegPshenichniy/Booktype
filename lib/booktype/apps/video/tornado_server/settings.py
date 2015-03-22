@@ -8,6 +8,7 @@ DEBUG = True
 # IP ADDRESS OF BOOKTYPE WEB APP
 ALLOWED_IP_ADDRESS_REQUEST = ('0.0.0.0:8080',)
 
+# override current settings 
 try:
     from local_settings import *
 except ImportError:

@@ -12,3 +12,4 @@
 .env
 .jshintrc
 .log
+local_settings.py
