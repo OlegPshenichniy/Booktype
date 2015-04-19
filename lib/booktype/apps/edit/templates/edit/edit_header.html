@@ -12,6 +12,7 @@
 <link href='{% static "edit/css/codemirror.css" %}' rel='stylesheet' type='text/css' />
 <link href='{% static "edit/css/slider.css" %}' rel='stylesheet' type='text/css'>
 <link href='{% static "edit/css/select2.css" %}' rel='stylesheet' type='text/css'>
+<link href='{% static "edit/css/ice.css" %}' rel='stylesheet' type='text/css'>
 {% list_theme_preloads %}
 {% endcompress %}
 
@@ -59,4 +60,16 @@
 <script type="text/javascript" src="{% static "edit/js/booktype/history.js" %}"></script>
 <script type="text/javascript" src="{% static "edit/js/booktype/settings.js" %}"></script>
 <script type="text/javascript" src="{% static "themes/js/themes.js" %}"></script>
+
+<script src="http://code.jquery.com/jquery-migrate-1.0.0.js"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/rangy-core.js" %}"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/polyfills.js" %}"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/ice.js" %}"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/dom.js" %}"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/icePlugin.js" %}"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/icePluginManager.js" %}"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/bookmark.js" %}"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/selection.js" %}"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/plugins/IceCopyPastePlugin/IceCopyPastePlugin.js" %}"></script>
+<script type="text/javascript" src="{% static "edit/js/ice/plugins/IceAddTitlePlugin/IceAddTitlePlugin.js" %}"></script>
 {% endcompress %}
