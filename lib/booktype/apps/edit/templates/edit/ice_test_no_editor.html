@@ -1,0 +1,127 @@
+{% extends "core/base.html" %}
+{% load i18n staticfiles booktype_tags compress %}
+
+
+{% block extra_header %}
+
+    <link rel="stylesheet" href="{% static "edit/css/ice.css" %}" type="text/css" media="screen"/>
+
+    <script src="http://code.jquery.com/jquery-migrate-1.0.0.js"></script>
+    <script type="text/javascript" src='{% static "edit/js/ice/rangy-core.js" %}'></script>
+    <script type="text/javascript" src='{% static "edit/js/ice/polyfills.js" %}'></script>
+    <script type="text/javascript" src='{% static "edit/js/ice/ice.js" %}'></script>
+    <script type="text/javascript" src='{% static "edit/js/ice/dom.js" %}'></script>
+    <script type="text/javascript" src='{% static "edit/js/ice/icePlugin.js" %}'></script>
+    <script type="text/javascript" src='{% static "edit/js/ice/icePluginManager.js" %}'></script>
+    <script type="text/javascript" src='{% static "edit/js/ice/bookmark.js" %}'></script>
+    <script type="text/javascript" src='{% static "edit/js/ice/selection.js" %}'></script>
+    <script type="text/javascript"
+            src='{% static "edit/js/ice/plugins/IceCopyPastePlugin/IceCopyPastePlugin.js" %}'></script>
+    <script type="text/javascript"
+            src='{% static "edit/js/ice/plugins/IceAddTitlePlugin/IceAddTitlePlugin.js" %}'></script>
+
+    <script type="text/javascript">
+        function setUser(el) {
+            var name = jQuery(el).find(':selected').data('username');
+            var id = jQuery(el).find(':selected').data('userid');
+            tracker.setCurrentUser({id: id, name: name});
+        }
+        function toggleDel(el) {
+            var body = document.getElementById('textbody');
+            if (jQuery(body).hasClass('CT-hide')) {
+                jQuery(body).removeClass('CT-hide');
+            } else {
+                jQuery(body).addClass('CT-hide');
+            }
+        }
+        function acceptAll(el) {
+            window.tracker.acceptAll();
+        }
+        function rejectAll(el) {
+            window.tracker.rejectAll();
+        }
+        function acceptChange(el) {
+            window.tracker.acceptChange();
+        }
+        function rejectChange(el) {
+            window.tracker.rejectChange();
+        }
+        function getChanges(el) {
+            var changes = window.tracker.getChanges();
+            alert(JSON.stringify(changes, null, 4));
+            console.log(changes);
+        }
+        function getCleanContent(el) {
+            text = document.getElementById('textbody');
+            var cleanContent = window.tracker.getCleanContent(text);
+            jQuery("#clean-content").html(cleanContent);
+        }
+        jQuery(document).ready(function () {
+            text = document.getElementById('textbody');
+            window.tracker = new ice.InlineChangeEditor({
+                element: text,
+                handleEvents: true,
+                currentUser: {id: 1, name: 'user A'},
+                plugins: [
+                    'IceAddTitlePlugin',
+                    {
+                        name: 'IceCopyPastePlugin',
+                        settings: {
+                            pasteType: 'formattedClean',
+                            preserve: 'p,a[href],i,em,b,span,ul,ol,li,hr'
+                        }
+                    }
+                ]
+            }).startTracking();
+        });
+    </script>
+
+
+{% endblock %}
+
+{% block navigation %}
+    <div class="navigation-bar">
+        {% booktype_site_name %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row two-col">
+            <div class="col-xs-12">
+                <div class="box white">
+                        <h2>{% trans "Links" %}</h2>
+                    <a href="https://github.com/NYTimes/ice" target="_blank">Git Hub Link</a> |
+                    <a href="http://nytimes.github.io/ice/demo/" target="_blank">Official Demo</a>
+                </div>
+                <div class="box well">
+                    <select title="set a user object to associate with each change" onchange="setUser(this)">
+                        <option data-userid="1" data-username="user A">user A</option>
+                        <option data-userid="2" data-username="user B">user B</option>
+                    </select>
+                    <button onclick="toggleDel(this)">Show/Hide Changes</button>
+                    <button title="Accept all of the changes in the editable region." onclick="acceptAll(this)">acceptAll</button>
+                    <button title="Accept the change at the current range/cursor position or at the given `optionalNode`"
+                            onclick="acceptChange(this)">acceptChange</button>
+                    <button title="Reject all of the changes in the editable region."
+                            onclick="rejectAll(this)">rejectAll</button>
+                    <button title="Reject the change at the current range/cursor position or at the given `optionalNode`"
+                            onclick="rejectChange(this)">rejectChange</button>
+                    <button title="Returns a clean version, without tracking tags, of the content in the editable element or out of the optional `body` param. After cleaning, the `optionalCallback` param is called which should further modify and return the body."
+                            style="background-color: #c1e7bb" onclick="getCleanContent(this)">getCleanContent</button>
+                    <button title="Get the internal list of change objects which are modeled from all of the change tracking nodes in the DOM."
+                            style="background-color: #e7876e" onclick="getChanges(this)">getChanges (alert + console)</button>
+                </div>
+                <div class="box white">
+                    <div id="textbody" style="height: 350px;"></div>
+                </div>
+                <div class="box">
+                    <div style="height: 350px;" id="clean-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

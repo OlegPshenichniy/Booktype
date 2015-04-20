@@ -19,7 +19,7 @@ from django.conf.urls import patterns, url
 from .views import (
     EditBookPage, BookHistoryPage, RevisionPage,
     ChapterHistoryPage, CompareChapterRevisions,
-    BookSettingsView
+    BookSettingsView, IceTestNoEditorTestView
 )
 
 urlpatterns = patterns('', # noqa
@@ -49,4 +49,6 @@ urlpatterns = patterns('', # noqa
         'booktype.apps.core.views.staticattachment'),
 
     url(r'^_settings/$', BookSettingsView.as_view(), name='settings'),
+
+    url(r'^ice-test-no-editor/$', IceTestNoEditorTestView.as_view(), name='ice_test_no_editor'),
 )

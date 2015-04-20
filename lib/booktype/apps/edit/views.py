@@ -706,3 +706,8 @@ class BookSettingsView(LoginRequiredMixin, JSONResponseMixin, BaseReaderView, Fo
                 self.template_name
             ]
         return super(BookSettingsView, self).get_template_names()
+
+
+class IceTestNoEditorTestView(TemplateView):
+    template_name = 'edit/ice_test_no_editor.html'
+    page_title = 'Ice.js without editor test'
