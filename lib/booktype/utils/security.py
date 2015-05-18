@@ -181,6 +181,8 @@ class BookSecurity(Security):
         super(BookSecurity, self).__init__(user)
 
         self.book = book
+        self.user_default_role = None
+        self.permissions = []
 
     def is_admin(self):
         """Checks if user is some kind of Book admin.
@@ -223,9 +225,38 @@ class BookSecurity(Security):
         :Returns:
          Returns True or False.
         """
-        if self.is_admin():
+        if self.is_admin() or self.is_book_admin():
             return True
-        return has_perm(self.user, perm, self.book)
+
+        try:
+            app_name, codename = perm.split('.')
+            permission = Permission.objects.get(app_name=app_name, name=codename)
+        except ValueError:
+            raise Exception("to_do parameter should be 'app_name.permission' way")
+        except Permission.DoesNotExist:
+            return False
+
+        # load permissions only once
+        if self.permissions:
+            return permission in self.permissions
+
+        # load default role
+        if not self.user_default_role:
+            # get default role key for extra permissions.
+            role_key = get_default_role_key(self.user)
+            self.user_default_role = get_default_role(role_key, self.book)
+
+        # append permissions from default role, no matter if book or not
+        if self.user_default_role:
+            self.permissions += [p for p in self.user_default_role.permissions.all()]
+
+        if self.user.is_authenticated():
+            bookroles = self.user.roles.filter(book=self.book)
+
+            for bookrole in bookroles:
+                self.permissions += [p for p in bookrole.role.permissions.all()]
+
+        return permission in self.permissions
 
     def can_edit(self):
         # This always returns True
