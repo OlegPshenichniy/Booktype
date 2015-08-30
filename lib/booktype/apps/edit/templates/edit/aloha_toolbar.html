@@ -151,22 +151,15 @@
   <div class="btn-group">
     <button class="btn btn-default btn-sm no-border dropdown-toggle table-dropdown" data-toggle="dropdown" rel="tooltip" data-original-title="{% trans "Table" %}" data-placement="bottom"><i class="icon-table"></i></button>
          <ul class="dropdown-menu pull-left table-dropdown" role="menu">
-          <li role="presentation" class="dropdown-header">{% trans "Insert Table" %}</li>
-          <li role="presentation" class="createtable">
-            <div class="insert-table-block">
-              <h4>{% trans "Rows" %}</h4>
-              <div class="slider2">
-                  <input type="text" class="rows-size" value="0" data-slider-min="1" data-slider-max="20" data-slider-step="1" data-slider-value="2" data-slider-orientation="horizontal" data-slider-selection="none" data-slider-tooltip="hide" style="width:180px;">
-              </div>
-              <div class="rows-value value">2</div>
-              <h4>{% trans "Columns" %}</h4>
-              <div class="slider2">
-                  <input type="text" class="cols-size" value="0" data-slider-min="1" data-slider-max="20" data-slider-step="1" data-slider-value="2" data-slider-orientation="horizontal" data-slider-selection="none" data-slider-tooltip="hide" style="width:180px;">
-              </div>
-              <div class="cols-value value">2</div>
-            <button class="btn btn-primary btn-default btn-sm action inserttable">{% trans "OK" %}</button>
-            </div>
-          </li>
+           <li role="presentation" class="createtable dropdown-submenu">
+             <a href="#" class="inserttable">{% trans "Insert Table" %}</a>
+             <ul class="dropdown-menu table-size-selector">
+               <li role="presentation" class="dropdown-header">{% trans "Select size" %}</li>
+               <li>
+                 <div id="table-size-selector"></div>
+               </li>
+             </ul>
+           </li>
           <li role="presentation"><a role="menuitem" data-target="#" class="action deletetable" data-placement="left">{% trans "Delete Table" %}</a></li>
           <li role="presentation" class="divider"></li>
           <li role="presentation" class="dropdown-header">{% trans "Table Options" %}</li>

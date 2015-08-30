@@ -20,3 +20,60 @@ outline: 0 !important;
 bdo.initial {
   border: 1px dashed black;
 }
+
+/* submenu css */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu > .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  -webkit-border-radius: 0 6px 6px 6px;
+  -moz-border-radius: 0 6px 6px;
+  border-radius: 0 6px 6px 6px;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: inline-table;
+}
+
+.dropdown-submenu:hover > a:after {
+  border-left-color: #fff;
+}
+
+.dropdown-submenu.pull-left {
+  float: none;
+}
+
+.dropdown-submenu.pull-left > .dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  -webkit-border-radius: 6px 0 6px 6px;
+  -moz-border-radius: 6px 0 6px 6px;
+  border-radius: 6px 0 6px 6px;
+}
+/* submenu css end */
+
+#table-size-selector {
+  text-align: center;
+}
+
+ul.table-size-selector {
+  padding: 7px;
+  min-width: 0;
+}
+
+.square-selector td {
+  width: 11px;
+  height: 11px;
+  background-color: #ebebeb;
+  border: 1px solid white;
+}
+
+.square-selector td.selected, .square-selector td:hover {
+  background-color: white;
+  border: 1px solid black;
+}
