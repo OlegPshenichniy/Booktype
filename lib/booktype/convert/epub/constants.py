@@ -8,5 +8,8 @@ DEFAULT_LANG = 'en'
 
 EPUB_VALID_IMG_ATTRS = frozenset([
     "alt", "class", "dir", "height", "id", "ismap", "longdesc",
-    "style", "title", "usemap", "width", "xml:lang", "src"
+    "style", "title", "usemap", "width", "xml:lang", "src", "transform-data"
 ])
+
+EPUB_DOCUMENT_WIDTH = 2480
+EDITOR_WIDTH = 898

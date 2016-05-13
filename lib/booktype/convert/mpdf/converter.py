@@ -43,6 +43,7 @@ from booktype.apps.themes.utils import (
 from booktype.apps.convert.templatetags.convert_tags import (
     get_refines, get_metadata)
 from booktype.utils.misc import booktype_slugify
+from booktype.convert.image_editor_conversion_plugin import ImageEditorConversionPlugin
 
 
 logger = logging.getLogger("booktype.convert.pdf")
@@ -109,6 +110,7 @@ class MPDFConverter(BaseConverter):
         self.images = {}
         self.theme_name = ''
         self.theme_plugin = None
+        self.image_editor_plugin = None
 
     def pre_convert(self, book):
         """Called before entire process of conversion is called.
@@ -137,6 +139,12 @@ class MPDFConverter(BaseConverter):
             except NotImplementedError:
                 pass
 
+        if self.image_editor_plugin:
+            try:
+                self.image_editor_plugin.pre_convert(original_book=book, book=None)
+            except NotImplementedError:
+                pass
+
     def post_convert(self, book, output_path):
         """Called after entire process of conversion is done.
 
@@ -148,6 +156,12 @@ class MPDFConverter(BaseConverter):
         if self.theme_plugin:
             try:
                 self.theme_plugin.post_convert(book, output_path)
+            except NotImplementedError:
+                pass
+
+        if self.image_editor_plugin:
+            try:
+                self.image_editor_plugin.post_convert(original_book=None, book=book, output_path=output_path)
             except NotImplementedError:
                 pass
 
@@ -274,6 +288,8 @@ class MPDFConverter(BaseConverter):
 
         self._init_theme_plugin()
 
+        self.image_editor_plugin = ImageEditorConversionPlugin(self)
+
         self.direction = self._get_dir(book)
 
         self.pre_convert(book)
@@ -331,6 +347,12 @@ class MPDFConverter(BaseConverter):
                 if self.theme_plugin:
                     try:
                         cnt = self.theme_plugin.fix_content(cnt)
+                    except NotImplementedError:
+                        pass
+
+                if self.image_editor_plugin:
+                    try:
+                        cnt = self.image_editor_plugin.fix_content(content=cnt)
                     except NotImplementedError:
                         pass
 
