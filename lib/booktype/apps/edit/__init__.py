@@ -10,6 +10,7 @@ PERMISSIONS = {
         ('lock_chapter', _('Lock chapter')),
         ('edit_locked_chapter', _('Edit locked chapter')),
         ('export_chapter_content', _('Export chapter content')),
+        ('import_to_chapter', _('Import documents to chapters')),
 
         ('create_section', _('Create section')),
         ('rename_section', _('Rename section')),
@@ -48,6 +49,7 @@ PERMISSIONS = {
         ('resolve_comment', _('Resolve Comments')),
         ('delete_comment', _('Delete Comments')),
 
-        ('modify_section_settings', _('Modify Section Settings'))
+        ('modify_section_settings', _('Modify Section Settings')),
+        ('generate_invite_code', _('Generate Invite Code')),
     ]
 }

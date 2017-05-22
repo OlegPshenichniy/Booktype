@@ -30,6 +30,9 @@ SPUTNIK_DISPATCHER = (
 )
 
 urlpatterns = [
+    # django log tailer
+    url(r'^_logs/', include('logtailer.urls')),
+
     # internationalization
     url(r'^_i18n/', include('django.conf.urls.i18n')),
 
@@ -61,8 +64,7 @@ urlpatterns = [
     url(r'^messaging/', include('booki.messaging.urls')),
 
     # importer application
-    # TODO: Add namespace
-    url(r'^_importer/', include('booktype.apps.importer.urls')),
+    url(r'^_importer/', include('booktype.apps.importer.urls', namespace='importer')),
 
     # API urls
     url(r'^_api/', include('booktype.api.urls')),

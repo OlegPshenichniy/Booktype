@@ -61,12 +61,31 @@ def publish_book(*args, **kwargs):
 
     for _format in kwargs['formats']:
         _ext = "pdf"
-        if _format == "epub":
+        _suffix = ""
+
+        if _format == "epub3":
             _ext = "epub"
+            _suffix = "-EPUB3"
+        elif _format == "epub2":
+            _ext = "epub"
+            _suffix = "-EPUB2"
         elif _format == "mobi":
             _ext = "mobi"
         elif _format == "xhtml":
             _ext = "zip"
+            _suffix = "-XHTML"
+        elif _format == "icml":
+            _ext = "zip"
+            _suffix = "-ICML"
+        elif _format == "docx":
+            _ext = "zip"
+            _suffix = "-DOCX"
+        elif _format == "pdfreactor":
+            _ext = "pdf"
+            _suffix = "-PRO"
+        elif _format == "pdfreactor-screenpdf":
+            _ext = "pdf"
+            _suffix = "-PROSCREEN"
 
         format_settings = get_settings_as_dictionary(book, _format)
 
@@ -77,7 +96,12 @@ def publish_book(*args, **kwargs):
                 "settings": format_settings,
                 "theme": get_theme(book, kwargs["username"])
             },
-            "output": "{0}_{1}.{2}".format(book.url_title, datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), _ext)
+            "output": "{0}_{1}{2}.{3}".format(
+                book.url_title,
+                datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
+                _suffix,
+                _ext
+            )
         }
 
         if 'cover_image' in format_settings:

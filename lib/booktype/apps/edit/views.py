@@ -5,7 +5,9 @@ import json
 import uuid
 import hashlib
 import logging
+import zipfile
 import difflib
+import StringIO
 import datetime
 import mimetypes
 import unidecode
@@ -24,7 +26,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView, DetailView, FormView
+from django.views.generic import TemplateView, DetailView, FormView, View
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 
 from braces.views import (LoginRequiredMixin, JSONResponseMixin)
@@ -33,14 +35,17 @@ from booki.editor import models
 from booki.utils.log import logChapterHistory, logBookHistory
 
 from booktype.apps.core import views
+from booktype.apps.core.models import BookRole
 from booktype.utils import security, config
 from booktype.utils.misc import booktype_slugify
 from booktype.apps.reader.views import BaseReaderView
+from booktype.apps.importer.forms import UploadDocxFileForm
 from booktype.utils.security import BookSecurity, get_user_permissions
 
 from .utils import color_me, send_notification, clean_chapter_html
 from .channel import get_toc_for_book
 from . import forms as book_forms
+from .models import InviteCode
 
 logger = logging.getLogger('booktype.apps.edit.views')
 
@@ -462,11 +467,15 @@ class EditBookPage(LoginRequiredMixin, views.SecurityMixin, TemplateView):
         context['is_admin'] = self.security.is_admin()
         context['is_owner'] = book.owner == self.request.user
         context['publish_options'] = config.get_configuration('PUBLISH_OPTIONS')
+        context['icc_profiles_choices'] = config.get_configuration('ICC_PROFILES_CHOICES', None)
 
         context['autosave'] = json.dumps({
             'enabled': config.get_configuration('EDITOR_AUTOSAVE_ENABLED'),
             'delay': config.get_configuration('EDITOR_AUTOSAVE_DELAY')
         })
+        context['settings_roles_show_permissions'] = config.get_configuration('EDITOR_SETTINGS_ROLES_SHOW_PERMISSIONS')
+
+        context['upload_docx_form'] = UploadDocxFileForm()
 
         return context
 
@@ -768,3 +777,209 @@ class BookSettingsView(LoginRequiredMixin, views.SecurityMixin,
                 self.template_name
             ]
         return super(BookSettingsView, self).get_template_names()
+
+
+class DownloadBookHistory(LoginRequiredMixin, DetailView):
+    """
+    This class is meant to be used for chapterwise history download
+    and book history download as well
+    """
+
+    # TODO: document how this thing works via url and what parameters might take
+    # in order to accomplish different things
+
+    model = models.Book
+    slug_field = 'url_title'
+    slug_url_kwarg = 'bookid'
+    context_object_name = 'book'
+    template_name = 'edit/download_history.html'
+
+    DEFAULT_REV = '10'
+
+    def _get_history(self, history_mode):
+        book = self.object
+        items = self.item_list
+        base_revision = self.base_revision
+
+        output = []
+
+        for itm in items:
+            revision1 = None
+
+            try:
+                revision1 = models.ChapterHistory.objects.filter(
+                        chapter__book=book, chapter=itm.chapter
+                    ).exclude(revision=itm.chapter.revision).order_by('-modified').first()
+                using_revision = revision1.revision
+            except models.ChapterHistory.DoesNotExist:
+                # if not found and revision was not the default one, just try to pull
+                # the default revision we've been using.
+                if base_revision not in [self.DEFAULT_REV, '2']:
+                    try:
+                        revision1 = models.ChapterHistory.objects.get(
+                            chapter__book=book, chapter=itm.chapter, revision=self.DEFAULT_REV)
+                        using_revision = _("default one ({})").format(self.DEFAULT_REV)
+                    except:
+                        continue
+
+                if revision1 is None:
+                    continue
+
+            except Exception:
+                continue
+
+            # do not include latest one because is the current chapter content
+            available_revisions = itm.chapter.chapterhistory_set.values_list('revision', flat=True)[1:]
+            if len(available_revisions) > 0:
+                _revs = ", ".join(map(str, set(available_revisions)))
+                available_revisions = _("Available revisions: {}").format(_revs)
+            else:
+                available_revisions = _("There are no revisions available")
+
+            title = u'{} <small>({} - {}) | <b data-toggle="tooltip" title="{}">{}: {}</b></small>'.format(
+                itm.name,
+                revision1.modified.strftime('%d.%m.%y %H:%M'),
+                itm.chapter.modified.strftime('%d.%m.%y %H:%M'),
+                available_revisions,
+                _("USING REVISION"),
+                using_revision
+            )
+
+            if history_mode == 'split':
+                content = split_diff(revision1.content, itm.chapter.content)
+                if 'class="diff' not in content:
+                    content = None
+            else:
+                content = unified_diff(revision1.content, itm.chapter.content)
+                if '<ins>' in content or '<del>' in content:
+                    content = "<tr><td valign='top'>%s</td></tr>" % content
+                else:
+                    content = None
+
+            if content:
+                content = self._clean_tags(content)
+
+            output.append({'title': title, 'content': content})
+
+        return output
+
+    def _clean_tags(self, s):
+        """
+        Remove ins, del and p tags with no content
+        we need a more elegant way to achieve this
+        """
+
+        s = s.replace('<p></p>', '')
+        s = s.replace('<p><br></p>', '')
+
+        s = s.replace('<br><br><br>', '<br>')
+        s = s.replace('<br><br>', '<br>')
+
+        s = s.replace('<ins></ins>', '')
+        s = s.replace('<del></del>', '')
+        s = s.replace('<ins><br></ins>', '')
+        s = s.replace('<del><br></del>', '')
+
+        return s
+
+    def get_context_data(self, **kwargs):
+        context = super(DownloadBookHistory, self).get_context_data(**kwargs)
+        chapterid = self.kwargs.get('chapter', None)
+        book_mode = True
+
+        book = context.get('book')
+        book_version = book.get_version()
+        history_title = book.title
+
+        if chapterid:
+            try:
+                toc_item = models.BookToc.objects.get(chapter__id=chapterid, book=book)
+                history_title = toc_item.chapter.title
+                book_mode = False
+            except Exception:
+                raise Http404
+
+        # both attributes below will be used later to zip both history_modes
+        self.item_list = [toc_item] if chapterid else book_version.get_toc()
+        self.base_revision = self.request.GET.get('base_rev', self.DEFAULT_REV)
+
+        # pull the diff function based on parameter
+        self.history_mode = self.request.GET.get('mode', 'unified')
+        context['output'] = self._get_history(self.history_mode)
+        context['history_title'] = history_title
+        context['book_mode'] = book_mode
+
+        return context
+
+    def render_to_response(self, context, **kwargs):
+        response = super(DownloadBookHistory, self).render_to_response(context, **kwargs)
+
+        # allows an html response mode
+        if self.request.GET.get('html', False):
+            return response
+
+        def _get_name(mode):
+            return '{}_history.html'.format(mode)
+
+        content = response.render().content
+        zip_name = '{}_history'.format(self.object.url_title)
+        history_file_name = _get_name(self.history_mode)
+
+        zfile_content = StringIO.StringIO()
+        zfile = zipfile.ZipFile(zfile_content, 'w', zipfile.ZIP_STORED)
+        zfile.writestr('{}/{}'.format(zip_name, history_file_name), content)
+
+        # include both history modes within zip file
+        if self.request.GET.get('zip_both'):
+            pending_mode = 'unified' if self.history_mode == 'split' else 'split'
+            context['output'] = self._get_history(pending_mode)
+
+            resp = super(DownloadBookHistory, self).render_to_response(context, **kwargs)
+            content2 = resp.render().content
+
+            # now it's time to add it to the zip file
+            zfile.writestr('{}/{}'.format(zip_name, _get_name(pending_mode)), content2)
+
+        zfile.close()
+
+        resp = HttpResponse(zfile_content.getvalue(), content_type="application/x-zip-compressed")
+        resp['Content-Disposition'] = 'attachment; filename={}.zip'.format(zip_name)
+
+        return resp
+
+
+class InviteCodes(LoginRequiredMixin, views.SecurityMixin, JSONResponseMixin, DetailView, FormView):
+
+    model = models.Book
+    slug_field = 'url_title'
+    slug_url_kwarg = 'bookid'
+    context_object_name = 'book'
+    template_name = 'edit/invite_code.html'
+    form_class = book_forms.InviteCodeForm
+
+    def get_context_data(self, **kwargs):
+        book = self.get_object()
+        context = super(InviteCodes, self).get_context_data(**kwargs)
+        context['existent_codes'] = book.invite_codes.all()
+        return context
+
+    def response(self, data):
+        return self.render_json_response(data)
+
+    def form_invalid(self, form):
+
+        return self.response({
+            'result': False,
+            'errors': form.errors
+        })
+
+    def form_valid(self, form):
+        instance = form.instance
+        instance.book = self.get_object()
+        instance.code = str(uuid.uuid4())[:8]
+        form.save()
+
+        return self.response({
+            'result': True,
+            'code': instance.code.upper()
+        })

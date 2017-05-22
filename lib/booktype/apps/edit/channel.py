@@ -45,7 +45,7 @@ except ImportError:
     import Image
 
 
-logger = logging.getLogger('booktype.apps.edit.channel')
+logger = logging.getLogger('sputnik.edit.channel')
 
 
 # this couple of functions should go to models.BookVersion
@@ -133,13 +133,14 @@ def get_toc_dict_for_book(version):
                 'tocID': chap.id,
                 'state': state,
                 'editBy': current_editor,
-                'hasComments': chap.chapter.has_comments
+                'hasComments': chap.chapter.has_comments,
+                'hasMarker': chap.chapter.has_marker
             })
         else:
             results.append({
                 'chapterID': chap.id,
                 'title': chap.name,
-                'urlTitle': chap.name,
+                'urlTitle': booktype_slugify(chap.name),
                 'isSection': True,
                 'status': None,        # fake status
                 'lockType': 0,         # fake unlocked
@@ -148,7 +149,8 @@ def get_toc_dict_for_book(version):
                 'tocID': chap.id,
                 'state': 'normal',     # fake state
                 'editBy': None,         # fake current editor,
-                'hasComments': False
+                'hasComments': False,
+                'hasMarker': False
             })
     return results
 
@@ -541,7 +543,8 @@ def remote_chapter_state(request, message, bookid, version):
             "chapterID": message["chapterID"],
             "state": message["state"],
             "username": request.user.username,
-            "hasComments": chapter.has_comments
+            "hasComments": chapter.has_comments,
+            "hasMarker": chapter.has_marker
         }, myself=True)
 
     return {"result": True}
@@ -1488,6 +1491,12 @@ def remote_split_chapter(request, message, bookid, version):
         myself=True
     )
 
+    toc_id = None
+    try:
+        toc_id = toc_item.id
+    except Exception:
+        pass
+
     sputnik.addMessageToChannel(
         request, "/booktype/book/%s/%s/" % (bookid, version), {
             "command": "chapter_create",
@@ -1499,7 +1508,7 @@ def remote_split_chapter(request, message, bookid, version):
                         new_chapter.lock_type,
                         new_chapter.lock_username,
                         "root",
-                        toc_item.id,
+                        toc_id,
                         "normal",
                         None)
         },
@@ -1511,6 +1520,7 @@ def remote_split_chapter(request, message, bookid, version):
     res['status'] = True
     res['result'] = True
     res['chapters'] = get_toc_for_book(book_version)
+    res['hold'] = get_hold_chapters(book_version)
 
     return res
 
@@ -1641,7 +1651,7 @@ def remote_create_chapter(request, message, bookid, version):
     # for now, just limit it to 100 characters max
     url_title = url_title[:100]
 
-    # here i should probably set it to default project status
+    # here I should probably set it to default project status
     s = models.BookStatus.objects.filter(book=book).order_by("-weight")[0]
     ch = models.Chapter.objects.filter(
         book=book, version=book_version, url_title=url_title)
@@ -3729,3 +3739,23 @@ def remote_section_settings_set(request, message, bookid, version):
         return {'result': True}
     except:
         return {'result': False}
+
+
+def remote_check_markers(request, message, bookid, version):
+    """Returns a list with the chapters that has markers in content"""
+
+    book, book_version, book_security = get_book(request, bookid, version)
+    marked_chapters = []
+
+    for idx, item in enumerate(book_version.get_toc()):
+        if item.is_chapter() and item.chapter.has_marker:
+            marked_chapters.append({
+                'title': item.chapter.title,
+                'url_title': item.chapter.url_title,
+                'id': item.chapter.pk
+            })
+
+    return {
+        'result': True,
+        'marked_chapters': marked_chapters
+    }

@@ -42,8 +42,9 @@ BOOKTYPE_IMPORTERS = {
     'docx': ('booktype.importer.docx', 'import_docx')
 }
 
+
 # Default styles matched so far. We'll add more in future
-# this constant is used on docimporter.py to correctly
+# these constants are used on docimporter.py to correctly
 # assign classes to imported elements
 DOCX_PARAGRAPH_STYLES_MAP = {
     'AuthorName': 'authorname',
@@ -51,11 +52,43 @@ DOCX_PARAGRAPH_STYLES_MAP = {
     'Citation': 'bk-cite'
 }
 
+# Which elements are considered <h1> style
+H1_STYLES = ['heading1']
+
+# Which elements are considered <h2> style
+H2_STYLES = ['heading2']
+
+# Which elements are considered <h3> style
+H3_STYLES = ['heading3']
+
+# Which elements are considered <h4> style
+H4_STYLES = ['heading4']
+
+# Which elements are considered <h5> style
+H5_STYLES = ['heading5']
+
+# Which elements are considered <h6> style
+H6_STYLES = ['heading6']
+
+# All of our Heading styles
+DOCX_HEADING_STYLES = H1_STYLES + H2_STYLES + H3_STYLES + H4_STYLES + H5_STYLES + H6_STYLES
+
+DOCX_HEADING_STYLES_TUPLE = (
+    ('h1', H1_STYLES),
+    ('h2', H2_STYLES),
+    ('h3', H3_STYLES),
+    ('h4', H4_STYLES),
+    ('h5', H5_STYLES),
+    ('h6', H6_STYLES)
+)
+
+# This will allow settings custom class on clients
+DOCX_IMPORTER_CLASS = 'booktype.importer.WordImporter'
+
 # END IMPORTERS STUFF
 
 # SERVER RELATED
-THIS_BOOKI_SERVER = os.environ.get('HTTP_HOST',
-                                   'booktype-demo.sourcefabric.org')
+THIS_BOOKI_SERVER = os.environ.get('HTTP_HOST', 'booktype-demo.sourcefabric.org')
 
 # ADMINISTRATIVE RELATED
 CREATE_BOOK_VISIBLE = True
@@ -91,7 +124,7 @@ EPUB_COVER_MAX_SIZE = 2800
 EPUB_COVER_MAX_PIXELS = 3200000
 
 # PUBLISHING RELATED
-PUBLISH_OPTIONS = ['mpdf', 'screenpdf', 'epub', 'mobi', 'xhtml']
+PUBLISH_OPTIONS = ['mpdf', 'screenpdf', 'epub3', 'epub2', 'icml', 'docx', 'mobi', 'xhtml']
 
 # mobi conversion
 # Options are "kindlegen" or "calibre"
@@ -117,12 +150,13 @@ EXPORT_WAIT_FOR = 90
 # convert constants
 CONVERT_EDITOR_WIDTH = 898
 XHTML_DOCUMENT_WIDTH = 2480
-MOBI_DOCUMENT_WIDTH = 2480
-EPUB_DOCUMENT_WIDTH = 2480
+MOBI_DOCUMENT_WIDTH = 1500
+EPUB_DOCUMENT_WIDTH = 1500
 
 # editor stuff here
 EDITOR_AUTOSAVE_ENABLED = False  # disabled by default
 EDITOR_AUTOSAVE_DELAY = 60  # time in seconds
+EDITOR_SETTINGS_ROLES_SHOW_PERMISSIONS = 0
 
 # end editor stuff
 
@@ -177,7 +211,10 @@ EXPORT_SETTINGS = {
         {u'name': u'header_margin', u'value': u'10'}, {u'name': u'show_footer', u'value': u'on'},
         {u'name': u'footer_margin', u'value': u'10'}, {u'name': u'cover_image', u'value': u' '},
         {u'name': u'styling', u'value': u''}],
-    'epub': [{u'name': u'cover_image', u'value': u' '}, {u'name': u'styling', u'value': u''}],
+    'epub2': [{u'name': u'cover_image', u'value': u' '}, {u'name': u'styling', u'value': u''}],
+    'epub3': [{u'name': u'cover_image', u'value': u' '}, {u'name': u'styling', u'value': u''}],
+    'icml': [{u'name': u'cover_image', u'value': u' '}, {u'name': u'styling', u'value': u''}],
+    'docx': [{u'name': u'cover_image', u'value': u' '}, {u'name': u'styling', u'value': u''}],
     'mobi': [{u'name': u'cover_image', u'value': u' '}, {u'name': u'styling', u'value': u''}],
     'xhtml': [{u'name': u'styling', u'value': u''}]
 }
