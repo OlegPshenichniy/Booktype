@@ -69,6 +69,8 @@ def publish_book(*args, **kwargs):
             _ext = "mobi"
         elif _format == "xhtml":
             _ext = "zip"
+        elif _format == "xml":
+            _ext = "zip"
         elif _format == "icml":
             _ext = "zip"
         elif _format == "docx":

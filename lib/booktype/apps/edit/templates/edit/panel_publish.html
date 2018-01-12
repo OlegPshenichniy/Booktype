@@ -623,6 +623,15 @@
             {% endcheck_perm %}
           </div>
         {% endif %}
+
+        {% if "xml" in publish_options %}
+          <div class="checkbox">
+            <label>
+              <input name="xml" type="checkbox"> {% trans "XML" %}
+            </label>
+          </div>
+        {% endif %}
+
       </div>
     </div>
 

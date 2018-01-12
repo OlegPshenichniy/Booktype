@@ -23,3 +23,4 @@ from .screenpdf.converter import ScreenPDFConverter
 from .xhtml.converter import XHTMLConverter
 from .pandoc.icml import ICMLConverter
 from .pandoc.docx import DOCXConverter
+from .xml.converter import XMLConverter
